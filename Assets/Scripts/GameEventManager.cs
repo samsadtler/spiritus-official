@@ -45,6 +45,8 @@ public class GameEventManager : MonoBehaviour {
 	public Canvas Interface;
 	public Image GoalMessage;
 	public bool fadeOutGoalMessage = false;
+	public bool halfHold = false;
+	public bool fullHold = false;
 	public Image ReturnMessage;
 	public bool fadeOutReturnMessage = false;
 	public bool pickedUpHankerchief = false;
@@ -184,6 +186,17 @@ public class GameEventManager : MonoBehaviour {
 		if (BtConnector.available()) {
 			fromArduino =  BtConnector.readLine ();
 			Debug.Log ("!!!!!!!!!!!!!!!!fromArduino: " +  fromArduino);
+			if (fromArduino == "halfhold"){
+				//adding coding to handle touch event
+				Debug.Log ("============= Half Hold");
+				halfHold = true;
+
+			};
+			if (fromArduino == "fullhold"){
+				//adding coding to handle touch event
+				Debug.Log ("============= Full Hold");
+				fullHold = true;
+			};
 		}
 
 		if (Input.GetKeyDown (KeyCode.Escape)) {
@@ -218,9 +231,42 @@ public class GameEventManager : MonoBehaviour {
 			}
 			
 			//Debug.Log ("Volume: " + Sounds[TitleSoundIndex].volume + " Left: " + leftSide.ToString () + " Right: " + rightSide.ToString ());
-			if (leftSide && rightSide) {
+			if (fullHold) {
 				StartCoroutine(SetupClara());
 				StartCoroutine(MessageReliever(RelieverRed));
+				Debug.Log ("fullhold True --> RelieverRed");
+				GameState = LastGameState;
+			}else if (halfHold) {
+				if(GameState != 0){
+					LastGameState = GameState;
+					Sounds[TitleSoundIndex].volume = 0;
+					Sounds[TitleSoundIndex].Play();
+				}
+				if(TouchState == 0){
+					StartCoroutine(MessageReliever(RelieverActive));
+					Debug.Log ("halfhold True --> RelieverActive");
+				}
+				GameState = 0;
+				TouchState = 1;
+			}
+//			else {
+//				if(GameState != 0){
+//					LastGameState = GameState;
+//					Sounds[TitleSoundIndex].volume = 0;
+//					Sounds[TitleSoundIndex].Play();
+//				}
+//				if(TouchState == 1){
+//					StartCoroutine(MessageReliever(RelieverRest));
+//					Debug.Log ("RelieverRest");
+//				}
+//				GameState = 0;
+//				TouchState = 0;
+//			}
+//Touch Event code backup if there is no tango holder
+			else if (leftSide && rightSide) {
+				StartCoroutine(SetupClara());
+				StartCoroutine(MessageReliever(RelieverRed));
+				Debug.Log ("RelieverRed");
 				GameState = LastGameState;
 			}else if (leftSide || rightSide) {
 				if(GameState != 0){
@@ -230,10 +276,12 @@ public class GameEventManager : MonoBehaviour {
 				}
 				if(TouchState == 0){
 					StartCoroutine(MessageReliever(RelieverActive));
+					Debug.Log ("RelieverActive");
 				}
 				GameState = 0;
 				TouchState = 1;
 			} else {
+			
 				if(GameState != 0){
 					LastGameState = GameState;
 					Sounds[TitleSoundIndex].volume = 0;
@@ -241,9 +289,12 @@ public class GameEventManager : MonoBehaviour {
 				}
 				if(TouchState == 1){
 					StartCoroutine(MessageReliever(RelieverRest));
+					Debug.Log ("RelieverRest");
 				}
 				GameState = 0;
 				TouchState = 0;
+				fullHold = false;
+				halfHold =false;
 			}
 		}
 		
