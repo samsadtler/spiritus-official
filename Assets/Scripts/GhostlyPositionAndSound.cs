@@ -145,8 +145,8 @@ public class GhostlyPositionAndSound : MonoBehaviour {
 		return this.GetComponent<Renderer>().material.HasProperty("_Color") ? this.GetComponent<Renderer>().material.color.a : 1;
 	}
 
-	void OnGUI(){
-		//GUILayout.Label ("dis " + timeSinceLastImage.ToString()) ;
-	}
+//	void OnGUI(){
+//		//GUILayout.Label ("dis " + timeSinceLastImage.ToString()) ;
+//	}
 
 }

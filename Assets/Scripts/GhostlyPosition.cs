@@ -84,8 +84,8 @@ public class GhostlyPosition : MonoBehaviour {
 		return this.GetComponent<Renderer>().material.color.a;
 	}
 
-	void OnGUI(){
-		//GUILayout.Label ("dis " + timeSinceLastImage.ToString()) ;
-	}
+//	void OnGUI(){
+//		//GUILayout.Label ("dis " + timeSinceLastImage.ToString()) ;
+//	}
 
 }

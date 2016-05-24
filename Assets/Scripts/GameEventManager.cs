@@ -38,10 +38,9 @@ public class GameEventManager : MonoBehaviour {
 	public int ClaraWaitTime = 10;
 	public float ClaraDialogThreshold = 10;
 	public GameObject[] PresentGhostlyObjects;
-	public GameObject[] TimeTravelGhostlyObjects;
 	public GameObject[] PastGhostlyObjects;
 	public GameObject[] AllSelectableObjects;
-	private GhostlyPositionAndSound[] AllGhostlyScripts;
+//	private GhostlyPositionAndSound[] AllGhostlyScripts;
 	public Canvas Interface;
 	public Image GoalMessage;
 	public bool fadeOutGoalMessage = false;
@@ -55,7 +54,14 @@ public class GameEventManager : MonoBehaviour {
 	public bool lastSliderMovement = false;
 	public float SliderMovementSpeed;
 	public AudioSource[] Sounds;
-	
+
+	//=============================================edit from Yao
+	public GameObject presentScene;
+	public GameObject pastScene;
+	private AudioSource[] claraAudios;
+
+	//=============================================
+
 	public const int TitleSoundIndex = 0;
 	public const int StaticSoundIndex = 1;
 	public const int StaticSound2Index = 2;
@@ -92,7 +98,7 @@ public class GameEventManager : MonoBehaviour {
 	private const string RelieverLowVibe = "7"; // set vibration to low
 	private const string RelieverHighVibe = "8"; // set vibration to high
 	private const string RelieverRest = "9"; // white, vibe off, lights normal
-	
+
 	// Use this for initialization
 	void Start () {
 		// Setup Bluetooth
@@ -140,9 +146,10 @@ public class GameEventManager : MonoBehaviour {
 		EndScript.setAlpha (0);
 		StaticScript = Static.GetComponent<StaticController>();
 		ClaraGhostScript = ClaraGhost.GetComponent<GhostlyPosition>();
+		claraAudios = ClaraGhost.GetComponents<AudioSource>();
 		HankerchiefScript = Hankerchief.GetComponent<GhostlyPositionAndSound>();
 		Sounds = this.GetComponents<AudioSource>();
-		PickUp.onClick.AddListener(pickup);
+//		PickUp.onClick.AddListener(pickup);
 		Slider.maxValue = Past;
 		Slider.minValue = Present;
 		Slider.wholeNumbers = false;
@@ -150,20 +157,19 @@ public class GameEventManager : MonoBehaviour {
 		Slider.onValueChanged.AddListener(TimeTravel);
 		Interface.gameObject.SetActive (false);
 		
-		AllGhostlyScripts = new GhostlyPositionAndSound[AllSelectableObjects.Length];
-		for (int i = 0; i < AllSelectableObjects.Length; i++) {
-			AllGhostlyScripts[i] = AllSelectableObjects[i].GetComponent<GhostlyPositionAndSound>();
-		}
+//		AllGhostlyScripts = new GhostlyPositionAndSound[AllSelectableObjects.Length];
+//		for (int i = 0; i < AllSelectableObjects.Length; i++) {
+//			AllGhostlyScripts[i] = AllSelectableObjects[i].GetComponent<GhostlyPositionAndSound>();
+//		}
 		
-		for(int i = 0; i < PresentGhostlyObjects.Length; i++){
-			PresentGhostlyObjects[i].SetActive(true);
-		}
-		for(int i = 0; i < TimeTravelGhostlyObjects.Length; i++){
-			TimeTravelGhostlyObjects[i].SetActive(false);
-		}
-		for(int i = 0; i < PastGhostlyObjects.Length; i++){
-			PastGhostlyObjects[i].SetActive(false);
-		}
+//		for(int i = 0; i < PresentGhostlyObjects.Length; i++){
+//			PresentGhostlyObjects[i].SetActive(true);
+//		}
+		presentScene.SetActive(true);
+//		for(int i = 0; i < PastGhostlyObjects.Length; i++){
+//			PastGhostlyObjects[i].SetActive(false);
+//		}
+		pastScene.SetActive(false);
 		
 		if (GameState == 0) {
 			Sounds [TitleSoundIndex].volume = TitleVolume;
@@ -307,7 +313,7 @@ public class GameEventManager : MonoBehaviour {
 				if(!ClaraGhost.activeSelf) return;
 				
 				if(ClaraGhostScript.getPlayerDistance() < ClaraDialogThreshold){
-					ClaraGhost.GetComponents<AudioSource>()[0].Play();
+					claraAudios[0].Play();
 					Sounds[StaticSoundIndex].volume = MinStaticVolume;
 					GameState = 2;
 					StartCoroutine(MessageReliever(RelieverHold));
@@ -329,9 +335,9 @@ public class GameEventManager : MonoBehaviour {
 				}
 				
 				// Audio
-				if(ClaraGhost.GetComponents<AudioSource>()[0].isPlaying){
+				if(claraAudios[0].isPlaying){
 					if(ghostDist < ClaraDialogThreshold){
-						ClaraGhost.GetComponents<AudioSource>()[0].mute = false;
+						claraAudios[0].mute = false;
 						if(ghostDist > ClaraDialogThreshold/2){
 							float targetVolume = ((ghostDist - ClaraDialogThreshold/2)/(ClaraDialogThreshold/2)) * StaticVolume;
 							if(targetVolume > Sounds[StaticSoundIndex].volume){
@@ -345,7 +351,7 @@ public class GameEventManager : MonoBehaviour {
 						//Sounds[StaticSoundIndex].volume = ghostDist > ClaraDialogThreshold/2 ? ((ghostDist/ClaraDialogThreshold) * StaticVolume)/2 : .03f;
 					}else{
 						Sounds[StaticSoundIndex].volume = Mathf.Max(MinStaticVolume, Sounds[StaticSoundIndex].volume - StaticFade);
-						ClaraGhost.GetComponents<AudioSource>()[0].mute = true;
+						claraAudios[0].mute = true;
 					}
 				}else{
 					Sounds[StaticSoundIndex].volume = MinStaticVolume;
@@ -374,7 +380,7 @@ public class GameEventManager : MonoBehaviour {
 					// If the player is close enough, start the next dialogue
 					if(ghostDist < ClaraDialogThreshold){
 						Sounds[StaticSoundIndex].volume = MinStaticVolume;
-						ClaraGhost.GetComponents<AudioSource>()[1].Play();
+						claraAudios[1].Play();
 						GameState = 4;
 						StartCoroutine(MessageReliever(RelieverHold));
 					}
@@ -394,9 +400,9 @@ public class GameEventManager : MonoBehaviour {
 				}
 				
 				// Audio
-				if(ClaraGhost.GetComponents<AudioSource>()[1].isPlaying){
+				if(claraAudios[1].isPlaying){
 					if(ghostDist < ClaraDialogThreshold){
-						ClaraGhost.GetComponents<AudioSource>()[1].mute = false;
+						claraAudios[1].mute = false;
 						if(ghostDist > ClaraDialogThreshold/2){
 							float targetVolume = ((ghostDist - ClaraDialogThreshold/2)/(ClaraDialogThreshold/2)) * StaticVolume;
 							if(targetVolume > Sounds[StaticSoundIndex].volume){
@@ -410,7 +416,7 @@ public class GameEventManager : MonoBehaviour {
 						//Sounds[StaticSoundIndex].volume = ghostDist > ClaraDialogThreshold/2 ? ((ghostDist/ClaraDialogThreshold) * StaticVolume)/2 : .03f;
 					}else{
 						Sounds[StaticSoundIndex].volume = Mathf.Max(MinStaticVolume, Sounds[StaticSoundIndex].volume - StaticFade);
-						ClaraGhost.GetComponents<AudioSource>()[1].mute = true;
+						claraAudios[1].mute = true;
 					}
 				}else{
 					Sounds[StaticSoundIndex].volume = MinStaticVolume;
@@ -430,51 +436,73 @@ public class GameEventManager : MonoBehaviour {
 						Sounds[StaticSoundIndex].volume = Mathf.Min(MinStaticVolume, Sounds[StaticSoundIndex].volume + StaticFade);
 					}
 					GameState = 5;
-					if(!ClaraGhost.GetComponents<AudioSource>()[4].isPlaying){
-						ClaraGhost.GetComponents<AudioSource>()[4].volume = .6f;
-						ClaraGhost.GetComponents<AudioSource>()[4].loop = true;
-						ClaraGhost.GetComponents<AudioSource>()[4].Play();
+					if(!claraAudios[4].isPlaying){
+						claraAudios[4].volume = .6f;
+						claraAudios[4].loop = true;
+						claraAudios[4].Play();
 					}
 					StartCoroutine(MessageReliever(RelieverRed));
 				}
 			}else if(GameState == 5){
 				//Debug.Log ("Highlighted: " + Highlighted);
-				if(Selected != -1){
-					AllSelectableObjects[Selected].transform.position = Camera.main.transform.position + Camera.main.transform.forward * 8;
-				}
+//				if(Selected != -1){
+//					AllSelectableObjects[Selected].transform.position = Camera.main.transform.position + Camera.main.transform.forward * 8;
+//				}
 				
 				if(Slider.value == Present){
 					ClaraGhost.SetActive(true);
 					float ghostDist = ClaraGhostScript.getPlayerDistance();
-					if(Selected != -1 && ghostDist < ClaraDialogThreshold - ClaraDialogThreshold/4){
-						if(AllSelectableObjects[Selected].tag == "hankerchief"){
-							if(!ClaraGhost.GetComponents<AudioSource>()[2].isPlaying){
-								ClaraGhost.GetComponents<AudioSource>()[2].Play();
-								if(ClaraGhost.GetComponents<AudioSource>()[4].isPlaying){
-									ClaraGhost.GetComponents<AudioSource>()[4].Stop();
+					if(RaycastManager.Instance.heldItem != null && ghostDist < (ClaraDialogThreshold - ClaraDialogThreshold/4)){
+						if(RaycastManager.Instance.heldItem.CompareTag("hankerchief"))
+						{
+							if(!claraAudios[2].isPlaying){
+								claraAudios[2].Play();
+								if(claraAudios[4].isPlaying){
+									claraAudios[4].Stop();
 								}
-								AllGhostlyScripts[Selected].stopSounds();
 								Interface.gameObject.SetActive(false);
 								GameState = 6;
 							}
-						}else{
-							if(ClaraGhost.GetComponents<AudioSource>()[4].isPlaying){
-								ClaraGhost.GetComponents<AudioSource>()[4].Stop();
-							}
-							if(!ClaraGhost.GetComponents<AudioSource>()[5].isPlaying){
-								ClaraGhost.GetComponents<AudioSource>()[5].Play();
-							}
 						}
-					}else{
-						if(ClaraGhost.GetComponents<AudioSource>()[5].isPlaying){
-							ClaraGhost.GetComponents<AudioSource>()[5].Stop();
-						}
-						if(!ClaraGhost.GetComponents<AudioSource>()[4].isPlaying){
-							ClaraGhost.GetComponents<AudioSource>()[4].volume = .6f;
-							ClaraGhost.GetComponents<AudioSource>()[4].loop = true;
-							ClaraGhost.GetComponents<AudioSource>()[4].Play();
+						else{
+							if(claraAudios[4].isPlaying){
+								claraAudios[4].Stop();
+							}
+							if(!claraAudios[5].isPlaying){
+								claraAudios[5].Play();
+							}
 						}
 					}
+
+//					if(Selected != -1 && ghostDist < ClaraDialogThreshold - ClaraDialogThreshold/4){
+//						if(AllSelectableObjects[Selected].tag == "hankerchief"){
+//							if(!claraAudios[2].isPlaying){
+//								claraAudios[2].Play();
+//								if(claraAudios[4].isPlaying){
+//									claraAudios[4].Stop();
+//								}
+//								AllGhostlyScripts[Selected].stopSounds();
+//								Interface.gameObject.SetActive(false);
+//								GameState = 6;
+//							}
+//						}else{
+//							if(claraAudios[4].isPlaying){
+//								claraAudios[4].Stop();
+//							}
+//							if(!claraAudios[5].isPlaying){
+//								claraAudios[5].Play();
+//							}
+//						}
+//					}else{
+//						if(claraAudios[5].isPlaying){
+//							claraAudios[5].Stop();
+//						}
+//						if(!claraAudios[4].isPlaying){
+//							claraAudios[4].volume = .6f;
+//							claraAudios[4].loop = true;
+//							claraAudios[4].Play();
+//						}
+//					}
 					
 					if(Sounds[StaticSoundIndex].volume > MinStaticVolume){
 						Sounds[StaticSoundIndex].volume = Mathf.Max(MinStaticVolume, Sounds[StaticSoundIndex].volume - StaticFade);
@@ -482,57 +510,64 @@ public class GameEventManager : MonoBehaviour {
 						Sounds[StaticSoundIndex].volume = Mathf.Min(MinStaticVolume, Sounds[StaticSoundIndex].volume + StaticFade);
 					}
 					
-					for(int i = 0; i < PresentGhostlyObjects.Length; i++){
-						PresentGhostlyObjects[i].SetActive(true);
-					}
-					for(int i = 0; i < PastGhostlyObjects.Length; i++){
-						PastGhostlyObjects[i].SetActive(false);
-					}
-					if(Selected != -1){
-						AllSelectableObjects[Selected].SetActive(true);
-					}
+//					for(int i = 0; i < PresentGhostlyObjects.Length; i++){
+//						PresentGhostlyObjects[i].SetActive(true);
+//					}
+//					for(int i = 0; i < PastGhostlyObjects.Length; i++){
+//						PastGhostlyObjects[i].SetActive(false);
+//					}
+					presentScene.SetActive(true);
+					pastScene.SetActive(false);
+
+//					if(Selected != -1){
+//						AllSelectableObjects[Selected].SetActive(true);
+//					}
 					
-					setHighlighted(AllSelectableObjects);
+//					setHighlighted(AllSelectableObjects);
 				}else if(Slider.value == Past){
 					// Do past stuff here
-					if(ClaraGhost.GetComponents<AudioSource>()[4].isPlaying){
-						ClaraGhost.GetComponents<AudioSource>()[4].Pause();
+					if(claraAudios[4].isPlaying){
+						claraAudios[4].Pause();
 					}
 					ClaraGhost.SetActive(false);
 					Sounds[StaticSoundIndex].volume = 0;
-					for(int i = 0; i < PresentGhostlyObjects.Length; i++){
-						PresentGhostlyObjects[i].SetActive(false);
-					}
-					for(int i = 0; i < PastGhostlyObjects.Length; i++){
-						PastGhostlyObjects[i].SetActive(true);
-					}
+//					for(int i = 0; i < PresentGhostlyObjects.Length; i++){
+//						PresentGhostlyObjects[i].SetActive(false);
+//					}
+//					for(int i = 0; i < PastGhostlyObjects.Length; i++){
+//						PastGhostlyObjects[i].SetActive(true);
+//					}
+					presentScene.SetActive(false);
+					pastScene.SetActive(true);
 					
-					if(Selected != -1){
-						AllSelectableObjects[Selected].SetActive(true);
-					}
+//					if(Selected != -1){
+//						AllSelectableObjects[Selected].SetActive(true);
+//					}
 					
-					setHighlighted(AllSelectableObjects);
+//					setHighlighted(AllSelectableObjects);
 				}else{
 					// Do time travel stuff here
-					if(ClaraGhost.GetComponents<AudioSource>()[4].isPlaying){
-						ClaraGhost.GetComponents<AudioSource>()[4].Pause();
+					if(claraAudios[4].isPlaying){
+						claraAudios[4].Pause();
 					}
 					ClaraGhost.SetActive(false);
 					Sounds[StaticSoundIndex].volume = 0;
-					for(int i = 0; i < PresentGhostlyObjects.Length; i++){
-						PresentGhostlyObjects[i].SetActive(false);
-					}
-					for(int i = 0; i < PastGhostlyObjects.Length; i++){
-						PastGhostlyObjects[i].SetActive(false);
-					}
-					if(Selected != -1){
-						AllSelectableObjects[Selected].SetActive(true);
-					}
+//					for(int i = 0; i < PresentGhostlyObjects.Length; i++){
+//						PresentGhostlyObjects[i].SetActive(false);
+//					}
+//					for(int i = 0; i < PastGhostlyObjects.Length; i++){
+//						PastGhostlyObjects[i].SetActive(false);
+//					}
+					presentScene.SetActive(false);
+					pastScene.SetActive(false);
+//					if(Selected != -1){
+//						AllSelectableObjects[Selected].SetActive(true);
+//					}
 				}
 			}
 			else if(GameState == 6){
-				if(!ClaraGhost.GetComponents<AudioSource>()[2].isPlaying){
-					AllSelectableObjects[Selected].SetActive(false);
+				if(!claraAudios[2].isPlaying){
+//					AllSelectableObjects[Selected].SetActive(false);
 					GameState = 7;
 					StartCoroutine(MessageReliever(RelieverTimeTravel));
 				}
@@ -614,31 +649,46 @@ public class GameEventManager : MonoBehaviour {
 		fadeOutReturnMessage = true;
 	}
 	
-	public void pickup(){
-		//Debug.Log ("Pick Up");
-		if (Selected != -1) // || AllSelectableObjects[Selected].tag == "hankerchief"
-			return;
-		
-		if(Highlighted != -1 && AllSelectableObjects[Highlighted].tag == "hankerchief"){
-			if (Sounds [ItemSelectIndex].isPlaying) {
-				Sounds[ItemSelectIndex].Stop();
-			}
-			Sounds[ItemSelectIndex].Play ();
-			// EFM
-			pickedUpHankerchief = true;
-			fadeOutReturnMessage = false;
-			StartCoroutine(hideReturnMessage());
-			Selected = Highlighted;
-			HankerchiefScript.setHighlight(true);
-			AllSelectableObjects[Selected].SetActive(false);
-		}else{
-			if (Sounds[ItemSelectFailIndex].isPlaying) {
-				Sounds[ItemSelectFailIndex].Stop();
-			}
-			Sounds[ItemSelectFailIndex].volume = 1;
-			Sounds[ItemSelectFailIndex].Play();
+//	public void pickup(){
+//		//Debug.Log ("Pick Up");
+//		if (Selected != -1) // || AllSelectableObjects[Selected].tag == "hankerchief"
+//			return;
+//		
+//		if(Highlighted != -1 && AllSelectableObjects[Highlighted].tag == "hankerchief"){
+//			OnHankerchiefPickedUp();
+////			if (Sounds [ItemSelectIndex].isPlaying) {
+////				Sounds[ItemSelectIndex].Stop();
+////			}
+////			Sounds[ItemSelectIndex].Play ();
+////			// EFM
+////			pickedUpHankerchief = true;
+////			fadeOutReturnMessage = false;
+////			StartCoroutine(hideReturnMessage());
+////			Selected = Highlighted;
+////			HankerchiefScript.setHighlight(true);
+////			AllSelectableObjects[Selected].SetActive(false);
+//		}else{
+//			if (Sounds[ItemSelectFailIndex].isPlaying) {
+//				Sounds[ItemSelectFailIndex].Stop();
+//			}
+//			Sounds[ItemSelectFailIndex].volume = 1;
+//			Sounds[ItemSelectFailIndex].Play();
+//		}
+//	}
+
+	public void OnHankerchiefPickedUp(){
+		if (Sounds [ItemSelectIndex].isPlaying) {
+			Sounds[ItemSelectIndex].Stop();
 		}
+		Sounds[ItemSelectIndex].Play ();
+		// EFM
+		pickedUpHankerchief = true;
+		fadeOutReturnMessage = false;
+		StartCoroutine(hideReturnMessage());
+//		Selected = Highlighted;
+//		HankerchiefScript.setHighlight(true);
 	}
+
 	
 	public void TimeTravel(float value){
 		sliderMovement = true;
@@ -675,20 +725,20 @@ public class GameEventManager : MonoBehaviour {
 			}
 		}
 		//Debug.Log ("Closest = " + closest);
-		if (Highlighted == -1) {
-			if(closest != -1){
-				AllGhostlyScripts[closest].Moving = false;
-			}
-			Highlighted = closest;
-		} else{
-			if(Highlighted != closest){
-				AllGhostlyScripts[Highlighted].Moving = true;
-			}
-			if(closest != -1){
-				AllGhostlyScripts[closest].Moving = false;
-			}
-			Highlighted = closest;
-		}
+//		if (Highlighted == -1) {
+//			if(closest != -1){
+//				AllGhostlyScripts[closest].Moving = false;
+//			}
+//			Highlighted = closest;
+//		} else{
+//			if(Highlighted != closest){
+//				AllGhostlyScripts[Highlighted].Moving = true;
+//			}
+//			if(closest != -1){
+//				AllGhostlyScripts[closest].Moving = false;
+//			}
+//			Highlighted = closest;
+//		}
 	}
 	
 	void setAlpha(GameObject obj, float a){
